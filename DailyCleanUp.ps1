@@ -34,6 +34,7 @@ $LblNo = "No"
 $LblNoPermission = "no permission"
 $LblNotAvailable = "not available"
 
+# Calculate the size of data in the specified folder
 function GetFolderDataSize {
   param(
     [Parameter(Mandatory = $true)]
@@ -51,6 +52,7 @@ function GetFolderDataSize {
   }
 }
 
+# Delete contents within the specified folder
 function CleanupFolder {
   param(
     [Parameter(Mandatory = $true)]
