@@ -1,3 +1,28 @@
+<#
+.SYNOPSIS
+This script performs a cleanup operation on system and temporary folders by deleting contents and checking the data size of specified directories.
+
+.DESCRIPTION
+The script is designed to manage system folder cleanup by checking the contents of specific directories, calculating their size, and optionally deleting their contents based on settings in a configuration file (`config.json`).
+
+It performs the following steps:
+1. **Check System Folders** - Checks for the existence of designated folders (e.g., temporary folders) and calculates the total size of data within each. The result is displayed in megabytes (MB).
+2. **Delete Folder Contents** - If configured, the script will delete the contents of specified folders, such as the Windows Temp, Prefetch, and CBS Logs folders. Additional folders to clean can be specified in the `config.json` file.
+3. **Configuration** - The script reads settings from `config.json`, which dictates whether to check and/or delete folder contents.
+4. **Error Handling** - In cases where access is restricted, or a folder doesn't exist, the script gracefully handles the error and provides a "no permission" or "not available" message.
+
+The script includes helper functions:
+- `GetFolderDataSize`: Calculates the size of data in the specified folder.
+- `CleanupFolder`: Deletes contents within the specified folder.
+
+.PARAMETERS
+- None directly required by the script itself; parameters are managed through `config.json` for setting up paths and enabling/disabling actions.
+
+.NOTES
+Requires PowerShell and permission to access and delete folder contents.
+
+#>
+
 $OutputEncoding = [System.Text.Encoding]::UTF8
 
 $ConfigFile = "$PSScriptroot\config.json"
