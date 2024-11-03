@@ -4,5 +4,13 @@
     "Check": true,
     "Delete": false,
     "AdditionFolders": []
+  },
+  "BackUp": {
+    "eMail": {
+      "Thunderbird": {
+        "Activated": true,
+        "BackupFolder": "D:\\ThunderBack"
+      }
+    }
   }
 }

@@ -26,7 +26,10 @@ Requires PowerShell and permission to access and delete folder contents.
 $OutputEncoding = [System.Text.Encoding]::UTF8
 
 $ConfigFile = "$PSScriptroot\config.json"
-$Config = Get-Content -Path $ConfigFile | ConvertFrom-Json
+$Config = Get-Content -Path $ConfigFile -Raw | ConvertFrom-Json
+
+. "$PSScriptRoot\scr\thunderbird.ps1"
+
 
 $LblOK = "OK"
 $LblYes = "Yes"
@@ -131,6 +134,67 @@ if ($config.Folder.Delete -eq $true) {
     }
     else {
       Write-Host $LblNoPermission -ForegroundColor Red
+    }
+  }
+}
+else {
+  Write-Host $LblNo -ForegroundColor Red
+}
+
+Write-Host "Thunderbird Backup desired... " -NoNewline -ForegroundColor Magenta
+
+if ($config.BackUp.eMail.Thunderbird.Activated -eq $true) {
+  Write-Host $LblYes -ForegroundColor Green
+
+  Write-Host "`tInstalled: " -NoNewline -ForegroundColor Magenta
+  if (IsThunderbirdInstalled) {
+    Write-Host $LblYes -ForegroundColor Green
+
+    Write-Host "`tIs running: " -NoNewline -ForegroundColor Magenta
+
+    $Counter = 0
+    $MaxCount = 5
+    do {
+      if (IsThunderbirdRunning) {
+        Write-Host $LblYes -ForegroundColor Yellow -NoNewline
+
+        Write-Host " --> Closing Thunderbird... " -NoNewline -ForegroundColor Yellow
+
+        CloseThunderbird
+
+        Start-Sleep -Seconds 2
+
+        if ( -not(IsThunderbirdRunning) ) {
+          Write-Host "done" -ForegroundColor Green
+          break
+        }
+      }
+      else {
+        Write-Host $LblNo -ForegroundColor Green
+        break
+      }
+      $Counter++
+    } while ($Counter -lt $MaxCount)
+  }
+  else {
+    Write-Host $LblNo -ForegroundColor Red
+  }
+
+  Write-Host "`tFound profiles: " -NoNewline -ForegroundColor Magenta
+  $Profiles = Get-ThunderbirdProfilePath
+
+  if ($Profiles) {
+    $Profiles | ForEach-Object { Write-Host $_ }
+
+    Write-Host "`tCompress... " -NoNewline -ForegroundColor Magenta
+    $CompressionResult = CompressProfileToDestinationFolder -Paths $Profiles
+    $CompressionResult | ForEach-Object {
+      if ($_ -like "*successful*") {
+        Write-Host $_ -ForegroundColor Green
+      }
+      else {
+        Write-Host $_ -ForegroundColor Red
+      }
     }
   }
 }
