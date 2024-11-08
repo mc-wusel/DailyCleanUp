@@ -29,13 +29,19 @@ $ConfigFile = "$PSScriptroot\config.json"
 $Config = Get-Content -Path $ConfigFile -Raw | ConvertFrom-Json
 
 . "$PSScriptRoot\scr\thunderbird.ps1"
-
+. "$PSScriptRoot\scr\recyclebin.ps1"
 
 $LblOK = "OK"
 $LblYes = "Yes"
 $LblNo = "No"
 $LblNoPermission = "no permission"
 $LblNotAvailable = "not available"
+
+# Check if the script is running with administrator privileges
+function IsAdministrator {
+  $User = [Security.Principal.WindowsIdentity]::GetCurrent()
+    (New-Object Security.Principal.WindowsPrincipal $User).IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
+}
 
 # Calculate the size of data in the specified folder
 function GetFolderDataSize {
@@ -75,6 +81,12 @@ function CleanupFolder {
 }
 
 Clear-Host
+
+if (-not(IsAdministrator) -and $Config.RecycleBin.Delete -eq $true) {
+  Write-Host "Script is not running with administrator privileges. Restarting script with elevated permissions..." -ForegroundColor Yellow
+  Start-Process -FilePath "powershell.exe" -ArgumentList "-File `"$PSCommandPath`"" -Verb RunAs
+  exit
+}
 
 #region folders whose content will be deleted
 Write-Host "Systemfolder cleanup check... " -nonewline -ForegroundColor magenta
@@ -135,6 +147,23 @@ if ($config.Folder.Delete -eq $true) {
     else {
       Write-Host $LblNoPermission -ForegroundColor Red
     }
+  }
+}
+else {
+  Write-Host $LblNo -ForegroundColor Red
+}
+
+Write-Host "Empty Recycle Bin desired... " -NoNewline -ForegroundColor Magenta
+
+if ($config.RecycleBin.Delete -eq $true) {
+  Write-Host $LblYes -ForegroundColor Green
+
+  Write-Host "`tStatus... " -NoNewline -ForegroundColor Magenta
+  if (Clear-RecycleBin) {
+    Write-Host "Done" -ForegroundColor Green
+  }
+  else {
+    Write-Host "Nothing was deleted" -ForegroundColor Yellow
   }
 }
 else {

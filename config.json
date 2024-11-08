@@ -1,14 +1,16 @@
 {
-  "Author": "mc-wusel",
   "Folder": {
-    "Check": true,
+    "Check": false,
     "Delete": false,
     "AdditionFolders": []
+  },
+  "RecycleBin": {
+    "Delete": false
   },
   "BackUp": {
     "eMail": {
       "Thunderbird": {
-        "Activated": true,
+        "Activated": false,
         "BackupFolder": "D:\\ThunderBack"
       }
     }
