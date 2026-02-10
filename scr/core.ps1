@@ -82,3 +82,49 @@ function CreateSystemRestorePoint {
     return $false
   }
 }
+
+function ClearDNSCache {
+  try {
+    Clear-DnsClientCache -ErrorAction Stop
+    return $true
+  }
+  catch {
+    return $false
+  }
+}
+
+function RunSystemHealthRepair {
+  try {
+    Write-Host "`tDISM RestoreHealth running..." -NoNewLine -ForegroundColor Cyan
+
+    $dismOutput = DISM /Online /Cleanup-Image /RestoreHealth 2>&1 | Out-String
+
+    if ($LASTEXITCODE -ne 0) {
+      Write-Host "DISM failed!" -ForegroundColor Red
+      Write-Host "Output:`n$dismOutput" -ForegroundColor Red
+      return $false
+    }
+
+    Write-Host "completed successfully" -ForegroundColor Green
+    Write-Host "`tSFC scan running..." -NoNewLine -ForegroundColor Cyan
+    
+    $proc = Start-Process -FilePath "sfc.exe" `
+      -ArgumentList "/scannow" `
+      -WindowStyle Hidden `
+      -PassThru `
+      -Wait
+
+    if ($proc.ExitCode -ne 0) {
+      Write-Host " failed!" -ForegroundColor Red
+      return $false
+    }
+
+    Write-Host " completed" -ForegroundColor Green
+    return $true
+  }
+  catch {
+    Write-Host "Unexpected error during system health repair!" -ForegroundColor Red
+    Write-Host $_
+    return $false
+  }
+}
