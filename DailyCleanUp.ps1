@@ -73,6 +73,24 @@ else {
   Write-Host $LblNo -ForegroundColor Red
 }
 
+write-Host "Clear DNS Cache... " -NoNewline -ForegroundColor Magenta
+if ($Config.DNSCache.Clear -eq $true) {
+  if (ClearDNSCache) {
+    Write-Host "Done" -ForegroundColor Green
+  }
+  else {
+    Write-Host "Failed" -ForegroundColor Red
+  }
+}
+else {
+  Write-Host $LblNo -ForegroundColor Red
+}
+
+write-Host "System health check: " -ForegroundColor Magenta
+if ($Config.SystemHealthRepair.Check -eq $true) {
+  RunSystemHealthRepair
+}
+
 #region folders whose content will be deleted
 Write-Host "Systemfolder cleanup check... " -NoNewline -ForegroundColor Magenta
 if ($Config.Folder.Check -eq $true) {
