@@ -28,6 +28,7 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 $ConfigFile = "$PSScriptroot\config.json"
 $Config = Get-Content -Path $ConfigFile -Raw | ConvertFrom-Json
 
+. "$PSScriptRoot\scr\core.ps1"
 . "$PSScriptRoot\scr\thunderbird.ps1"
 . "$PSScriptRoot\scr\recyclebin.ps1"
 
@@ -40,44 +41,7 @@ $LblNotAvailable = "not available"
 # Check if the script is running with administrator privileges
 function IsAdministrator {
   $User = [Security.Principal.WindowsIdentity]::GetCurrent()
-    (New-Object Security.Principal.WindowsPrincipal $User).IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
-}
-
-# Calculate the size of data in the specified folder
-function GetFolderDataSize {
-  param(
-    [Parameter(Mandatory = $true)]
-    [string]$Folder
-  )
-
-  try {
-    $Items = Get-ChildItem -Path $Folder -Recurse -ErrorAction SilentlyContinue
-    $SizeInByte = $Items | Measure-Object -Property Length -Sum
-    $SizeInMB = [math]::Round($SizeInByte.Sum / 1MB, 2)
-    return $SizeInMB
-  }
-  catch {
-    return $false
-  }
-}
-
-# Delete contents within the specified folder
-function CleanupFolder {
-  param(
-    [Parameter(Mandatory = $true)]
-    [string]$Folder
-  )
-
-  try {
-    if (Test-Path -Path $Folder -PathType Container) {
-      Get-ChildItem $Folder  -ErrorAction Stop | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue
-      Start-Sleep -Milliseconds 200
-
-    }
-  }
-  catch {
-    return $false
-  }
+  (New-Object Security.Principal.WindowsPrincipal $User).IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
 }
 
 Clear-Host
@@ -88,8 +52,15 @@ if (-not(IsAdministrator) -and $Config.RecycleBin.Delete -eq $true) {
   exit
 }
 
+#region Check SMART State of physical disks
+Write-Host "Checking S.M.A.R.T state of physical disks... " -ForegroundColor Magenta
+if ($Config.Disk.Check -eq $true) {
+  Check_SMART_State
+  SystemDiskSpace
+}
+
 #region folders whose content will be deleted
-Write-Host "Systemfolder cleanup check... " -nonewline -ForegroundColor magenta
+Write-Host "Systemfolder cleanup check... " -nonewline -ForegroundColor Magenta
 if ($Config.Folder.Check -eq $true) {
   Write-Host $LblYes -ForegroundColor green
 
