@@ -128,3 +128,22 @@ function RunSystemHealthRepair {
     return $false
   }
 }
+
+function RunUpdates {
+  try {
+    $WinGetOutput = winget upgrade --all --include-unknown `
+      --accept-source-agreements --accept-package-agreements `
+      --disable-interactivity 2>&1 | Out-String
+    if ($LASTEXITCODE -eq 0) {
+      return $true
+    }
+    else {
+      Write-Host "Error during updates: $WinGetOutput"
+      return $false
+    }
+  }
+  catch {
+    Write-Host "Exception occurred: $_"
+    return $false
+  }
+}
