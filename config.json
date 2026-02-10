@@ -1,6 +1,9 @@
 {
+  "Disk": {
+    "Check": true
+  },
   "Folder": {
-    "Check": false,
+    "Check": true,
     "Delete": false,
     "AdditionFolders": []
   },
