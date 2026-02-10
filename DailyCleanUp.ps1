@@ -246,3 +246,18 @@ if ($config.BackUp.eMail.Thunderbird.Activated -eq $true) {
 else {
   Write-Host $LblNo -ForegroundColor Red
 }
+
+if ($Config.Restart) {
+  $delay = 5  
+  Write-Host "Restarting system in $delay seconds..." -ForegroundColor Magenta
+    
+  for ($i = $delay; $i -gt 0; $i--) {
+    Write-Host "$i..." -NoNewline -ForegroundColor Yellow
+    Start-Sleep -Seconds 1
+    Write-Host "`r" 
+  }
+
+  Write-Host "" 
+  Restart-Computer -Force
+}
+
