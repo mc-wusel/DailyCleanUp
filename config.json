@@ -2,6 +2,9 @@
   "Disk": {
     "Check": true
   },
+  "RestorePoint": {
+    "Create": true
+  },
   "Folder": {
     "Check": true,
     "Delete": false,

@@ -59,8 +59,22 @@ if ($Config.Disk.Check -eq $true) {
   SystemDiskSpace
 }
 
+#region Set Restore Point
+Write-Host "Creating System Restore Point... " -NoNewline -ForegroundColor Magenta
+if ($Config.RestorePoint.Create -eq $true) {
+  if (CreateSystemRestorePoint) {
+    Write-Host "Done" -ForegroundColor Green
+  }
+  else {
+    Write-Host "Failed" -ForegroundColor Red
+  }
+}
+else {
+  Write-Host $LblNo -ForegroundColor Red
+}
+
 #region folders whose content will be deleted
-Write-Host "Systemfolder cleanup check... " -nonewline -ForegroundColor Magenta
+Write-Host "Systemfolder cleanup check... " -NoNewline -ForegroundColor Magenta
 if ($Config.Folder.Check -eq $true) {
   Write-Host $LblYes -ForegroundColor green
 

@@ -72,3 +72,13 @@ function SystemDiskSpace {
   Write-Host "`tTotal Space: " -NoNewline -ForegroundColor Magenta
   Write-Host "$TotalSpaceGB GB" 
 }
+
+function CreateSystemRestorePoint {
+  try {
+    Checkpoint-Computer -Description "DailyCleanUp Restore Point" -RestorePointType "MODIFY_SETTINGS" -ErrorAction Stop
+    return $true
+  }
+  catch {
+    return $false
+  }
+}
