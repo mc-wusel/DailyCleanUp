@@ -86,9 +86,22 @@ else {
   Write-Host $LblNo -ForegroundColor Red
 }
 
-write-Host "System health check: " -ForegroundColor Magenta
 if ($Config.SystemHealthRepair.Check -eq $true) {
+  write-Host "System health check: "  -ForegroundColor Magenta
   RunSystemHealthRepair
+}
+else {
+  Write-Host "System health check: " -NoNewline -ForegroundColor Magenta
+  Write-Host $LblNo -ForegroundColor Red
+}
+
+
+write-Host "Get updates... " -NoNewline -ForegroundColor Magenta
+if ($Config.Updates.Check -eq $true) {
+  RunUpdates
+}
+else {
+  Write-Host $LblNo -ForegroundColor Red
 }
 
 #region folders whose content will be deleted

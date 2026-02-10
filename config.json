@@ -3,7 +3,16 @@
     "Check": true
   },
   "RestorePoint": {
-    "Create": true
+    "Create": false
+  },
+  "DNSCache": {
+    "Clear": true
+  },
+  "SystemHealthRepair": {
+    "Check": false
+  },
+  "Updates": {
+    "Check": true
   },
   "Folder": {
     "Check": true,
