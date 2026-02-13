@@ -103,7 +103,7 @@ jobs:
       - name: Add SHA-256 to Release Notes
         run: |
           BODY=$(gh release view ${{ env.NEW_VERSION }} --json body -q .body)
-          NEW_BODY="$BODY\n\n**SHA-256:** `${{ env.HASH }}`"
+          NEW_BODY="$BODY\n\n**SHA-256:** ${{ env.HASH }}"
           gh release edit ${{ env.NEW_VERSION }} --notes "$NEW_BODY"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
