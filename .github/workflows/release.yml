@@ -65,7 +65,7 @@ jobs:
 
       - name: Auto-merge PR
         run: |
-          gh pr merge ${{ env.BRANCH }} --merge --auto --admin
+          gh pr merge ${{ env.BRANCH }} --merge --admin --delete-branch
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
