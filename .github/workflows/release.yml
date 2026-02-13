@@ -63,6 +63,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Auto-merge PR
+        run: |
+          gh pr merge ${{ env.BRANCH }} --merge --auto --admin
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
   release:
     needs: version-bump
     runs-on: ubuntu-latest
