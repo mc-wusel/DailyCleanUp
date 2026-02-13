@@ -8,13 +8,14 @@ on:
         required: false
         default: 'patch'
 
+permissions:
+  contents: write  # nötig, falls GitHub Release erstellt wird
+
 jobs:
-  version-bump:
+  release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Read VERSION
         id: read_version
@@ -29,8 +30,8 @@ jobs:
           if [[ -z "$BUMP" ]]; then BUMP="patch"; fi
           echo "BUMP_TYPE=$BUMP" >> $GITHUB_ENV
 
-      - name: Bump VERSION and create PR branch
-        id: bump
+      - name: Bump VERSION
+        id: bump_version
         run: |
           IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
           case "$BUMP_TYPE" in
@@ -40,49 +41,15 @@ jobs:
           esac
           NEW_VERSION="$MAJOR.$MINOR.$PATCH"
           echo $NEW_VERSION > VERSION
-          
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
 
-          BRANCH="bump-$NEW_VERSION"
-          git checkout -b $BRANCH
+      - name: Commit new VERSION
+        run: |
+          git config user.name "mc-wusel"
+          git config user.email "your.email@example.com"
           git add VERSION
-          git commit -m "Bump version to $NEW_VERSION [skip ci]"
-          git push origin $BRANCH
-
-          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
-          echo "BRANCH=$BRANCH" >> $GITHUB_ENV
-
-      - name: Create Pull Request
-        run: |
-          gh pr create \
-            --title "Bump version to ${{ env.NEW_VERSION }}" \
-            --body "Automated version bump for release" \
-            --base main \
-            --head ${{ env.BRANCH }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Auto-merge PR
-        run: |
-          gh pr merge ${{ env.BRANCH }} --merge --admin --delete-branch
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
-  release:
-    needs: version-bump
-    runs-on: ubuntu-latest
-    #if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Read merged VERSION
-        id: read_version
-        run: |
-          NEW_VERSION=$(cat VERSION)
-          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+          git commit -m "Bump version to $NEW_VERSION [skip ci]" || echo "No changes to commit"
+          git push origin HEAD:main || echo "Push skipped (force if needed)"
 
       - name: Create ZIP
         run: |
