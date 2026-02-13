@@ -9,7 +9,7 @@ on:
         default: 'patch'
 
 jobs:
-  release:
+  version-bump:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -26,12 +26,10 @@ jobs:
         id: determine_bump
         run: |
           BUMP="${{ github.event.inputs.bump }}"
-          if [[ -z "$BUMP" ]]; then
-            BUMP="patch"
-          fi
+          if [[ -z "$BUMP" ]]; then BUMP="patch"; fi
           echo "BUMP_TYPE=$BUMP" >> $GITHUB_ENV
 
-      - name: Bump VERSION
+      - name: Bump VERSION and create PR branch
         id: bump
         run: |
           IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
@@ -42,11 +40,42 @@ jobs:
           esac
           NEW_VERSION="$MAJOR.$MINOR.$PATCH"
           echo $NEW_VERSION > VERSION
+          
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          BRANCH="bump-$NEW_VERSION"
+          git checkout -b $BRANCH
           git add VERSION
           git commit -m "Bump version to $NEW_VERSION [skip ci]"
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD
+          git push origin $BRANCH
+
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+          echo "BRANCH=$BRANCH" >> $GITHUB_ENV
+
+      - name: Create Pull Request
+        run: |
+          gh pr create \
+            --title "Bump version to ${{ env.NEW_VERSION }}" \
+            --body "Automated version bump for release" \
+            --base main \
+            --head ${{ env.BRANCH }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  release:
+    needs: version-bump
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Read merged VERSION
+        id: read_version
+        run: |
+          NEW_VERSION=$(cat VERSION)
           echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
 
       - name: Create ZIP
