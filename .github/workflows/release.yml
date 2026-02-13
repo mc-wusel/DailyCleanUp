@@ -1,12 +1,12 @@
-name: Auto Release DailyCleanUp (GitHub-native Notes + SHA)
+name: DailyCleanUp Release
 
 on:
   workflow_dispatch:
     inputs:
       bump:
-        description: "Optional: major, minor, or patch. Defaults to patch."
+        description: 'Optional: major, minor, or patch. Defaults to patch'
         required: false
-        default: "patch"
+        default: 'patch'
 
 jobs:
   release:
@@ -32,20 +32,11 @@ jobs:
       - name: Bump VERSION
         id: bump
         run: |
-          IFS='.' read -r MAJOR MINOR PATCH <<< "${CURRENT}"
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
           case "$BUMP_TYPE" in
-            major)
-              MAJOR=$((MAJOR+1))
-              MINOR=0
-              PATCH=0
-              ;;
-            minor)
-              MINOR=$((MINOR+1))
-              PATCH=0
-              ;;
-            patch)
-              PATCH=$((PATCH+1))
-              ;;
+            major) MAJOR=$((MAJOR+1)); MINOR=0; PATCH=0 ;;
+            minor) MINOR=$((MINOR+1)); PATCH=0 ;;
+            patch) PATCH=$((PATCH+1)) ;;
           esac
           NEW_VERSION="$MAJOR.$MINOR.$PATCH"
           echo $NEW_VERSION > VERSION
@@ -61,35 +52,27 @@ jobs:
           mkdir -p release
           zip -r release/DailyCleanUp-${{ env.NEW_VERSION }}.zip . -x "*.git*" -x "release/*"
 
-      - name: SHA-256
+      - name: Compute SHA-256
         id: sha
         run: |
           HASH=$(sha256sum release/DailyCleanUp-${{ env.NEW_VERSION }}.zip | awk '{print $1}')
           echo "HASH=$HASH" >> $GITHUB_ENV
 
       - name: Create GitHub Release
-        uses: actions/create-release@v1
-        id: create_release
-        with:
-          tag_name: ${{ env.NEW_VERSION }}
-          release_name: DailyCleanUp ${{ env.NEW_VERSION }}
-          draft: false
-          prerelease: false
-          generate_release_notes: true
+        run: |
+          gh release create ${{ env.NEW_VERSION }} \
+            release/DailyCleanUp-${{ env.NEW_VERSION }}.zip \
+            --generate-notes \
+            --title "DailyCleanUp ${{ env.NEW_VERSION }}" \
+            --draft=false \
+            --prerelease=false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Add SHA-256 to Release Notes
         run: |
           BODY=$(gh release view ${{ env.NEW_VERSION }} --json body -q .body)
-          NEW_BODY="$BODY`n`n**SHA-256:** `${{ env.HASH }}`"
+          NEW_BODY="$BODY\n\n**SHA-256:** `${{ env.HASH }}`"
           gh release edit ${{ env.NEW_VERSION }} --notes "$NEW_BODY"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload ZIP
-        uses: softprops/action-gh-release@v1
-        with:
-          files: release/DailyCleanUp-${{ env.NEW_VERSION }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
