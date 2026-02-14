@@ -1,29 +1,191 @@
 # DailyCleanUp
 
-DailyCleanUp is a practical script that automates system maintenance and cleanup tasks on a computer. The script is designed to regularly delete specified folders to free up space and improve system performance. Additionally, it offers the option to back up Thunderbird profiles if Thunderbird is installed on the computer.
+DailyCleanUp is a configurable PowerShell maintenance script that
+automates Windows system cleanup, diagnostics, optional backups, and
+restart operations.\
+All behavior is controlled via a `config.json` file, allowing flexible
+activation or deactivation of individual maintenance tasks.
 
-## Main Features
+The script is designed for regular system maintenance and can be
+executed manually or via Windows Task Scheduler.
 
-### Directory Cleanup
-- The script allows for the targeted deletion of specified folders. Users can specify particular folders that should be regularly cleared to remove unwanted files and improve organization.
-- The configuration of these directories is done through a configuration file, where the paths to be deleted can be entered.
+# Main Features
 
-### Backup of Thunderbird Profiles
-- If Thunderbird is installed, the script has the capability to back up user profiles. This is particularly useful for preserving important emails, contacts, and settings before deleting files.
-- The backup takes place in a predefined backup directory specified by the user.
+## System Diagnostics
 
-## Usage
+-   **S.M.A.R.T Disk Health Check**\
+    Checks the health status of physical disks and displays system disk
+    space information.
 
-### Installation
-- The script can be easily installed by cloning the repository or downloading the script files to the computer.
-- Before execution, adjustments may need to be made in the configuration file to set the directories to be deleted and the location for backups.
+-   **System Health Repair (optional)**\
+    Runs Windows system health repair operations.
 
-### Execution
-- The script can be run manually via the command line. It is also possible to integrate it into scheduled tasks for automatic cleanup operations.
+-   **Windows Update Check (optional)**\
+    Executes update checks and installation procedures.
 
-## Benefits
-- **Data Backup**: The backup feature for Thunderbird profiles ensures that important data is not lost.
-- **Flexibility**: Users can customize the script to meet their specific needs by configuring the directories and backup paths.
+## System Maintenance
 
-## Conclusion
-The **DailyCleanUp** project provides a simple and effective solution for optimizing PC performance and managing user profiles in Thunderbird. It is aimed at users who want to regularly clean up their system resources while ensuring that their important data is backed up. With its user-friendly configuration, it is accessible to both technical and less experienced users.
+-   **Create System Restore Point (optional)**\
+    Generates a Windows restore point before performing cleanup
+    operations.
+
+-   **Clear DNS Cache (optional)**\
+    Flushes the Windows DNS cache.
+
+-   **Folder Size Analysis**\
+    Calculates and displays the size (in MB) of system and custom
+    folders.
+
+-   **System Folder Cleanup (optional)**\
+    Deletes contents of predefined Windows system folders and
+    user-defined directories.
+
+Default system folders include:
+
+-   `%TEMP%`
+-   `C:\Windows\Temp`
+-   `C:\Windows\Prefetch`
+-   `C:\Windows\Logs\CBS`
+-   `C:\Windows\SoftwareDistribution\Download`
+
+Additional folders can be defined in the configuration file.
+
+-   **Recycle Bin Cleanup (optional)**\
+    Empties the Windows Recycle Bin.
+
+## Thunderbird Profile Backup (optional)
+
+If enabled in the configuration:
+
+-   Detects whether Thunderbird is installed
+-   Closes Thunderbird if currently running
+-   Detects available profiles
+-   Compresses profiles
+-   Stores backups in a defined destination folder
+
+This ensures email data, contacts, and settings are preserved before
+performing cleanup operations.
+
+## Automatic Restart
+
+If enabled, the script automatically restarts the system after execution
+(with a countdown timer).
+
+# Configuration
+
+All features are controlled via `config.json`.
+
+## Configuration Overview
+
+  ----------------------------------------------------------------------------------
+  Setting                                   Description
+  ----------------------------------------- ----------------------------------------
+  `Disk.Check`                              Enables S.M.A.R.T disk check and disk
+                                            space display
+
+  `RestorePoint.Create`                     Creates a system restore point
+
+  `DNSCache.Clear`                          Clears the Windows DNS cache
+
+  `SystemHealthRepair.Check`                Runs system health repair
+
+  `Updates.Check`                           Executes Windows update check
+
+  `Folder.Check`                            Calculates folder sizes
+
+  `Folder.Delete`                           Deletes folder contents
+
+  `Folder.AdditionalFolders`                Adds custom folders for cleanup
+
+  `RecycleBin.Delete`                       Empties the recycle bin
+
+  `Restart`                                 Restarts the system after completion
+
+  `BackUp.eMail.Thunderbird.Activated`      Enables Thunderbird backup
+
+  `BackUp.eMail.Thunderbird.BackupFolder`   Destination folder for backups
+  ----------------------------------------------------------------------------------
+
+## Example Configuration
+
+``` json
+{
+  "Disk": { "Check": true },
+  "RestorePoint": { "Create": false },
+  "DNSCache": { "Clear": true },
+  "SystemHealthRepair": { "Check": false },
+  "Updates": { "Check": false },
+  "Folder": {
+    "Check": true,
+    "Delete": false,
+    "AdditionalFolders": []
+  },
+  "RecycleBin": { "Delete": false },
+  "Restart": true,
+  "BackUp": {
+    "eMail": {
+      "Thunderbird": {
+        "Activated": false,
+        "BackupFolder": "D:\\ThunderBack"
+      }
+    }
+  }
+}
+```
+
+# Administrator Behavior
+
+Some operations require administrator privileges:
+
+-   Creating restore points\
+-   Cleaning system folders\
+-   Running updates\
+-   Emptying the Recycle Bin\
+-   Restarting the system
+
+If required, the script automatically relaunches itself with elevated
+permissions.
+
+# Usage
+
+## Installation
+
+1.  Clone the repository or download the files.
+2.  Adjust `config.json` according to your needs.
+3.  Ensure PowerShell execution policy allows local scripts:
+
+``` powershell
+Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+## Execution
+
+``` powershell
+.\DailyCleanUp.ps1
+```
+
+The script can also be configured as a scheduled task for automated
+maintenance.
+
+# Requirements
+
+-   Windows OS\
+-   PowerShell 5.x or newer\
+-   Administrator privileges (for system-level tasks)\
+-   Thunderbird (only required if backup feature is enabled)
+
+# Benefits
+
+-   **Modular** -- Enable only the features you need\
+-   **Automated Maintenance** -- Suitable for scheduled execution\
+-   **Safe Backup Option** -- Protect Thunderbird profiles before
+    cleanup\
+-   **Graceful Error Handling** -- Handles missing folders and
+    permission issues safely
+
+# Conclusion
+
+**DailyCleanUp** provides a structured and configurable approach to
+Windows system maintenance.\
+It combines diagnostics, cleanup, optional backups, and restart
+automation in a single script.
