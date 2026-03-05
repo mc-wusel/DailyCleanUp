@@ -1,114 +1,140 @@
-# DailyCleanUp
+[![Release](https://img.shields.io/github/v/release/mc-wusel/DailyCleanUp)](https://github.com/mc-wusel/DailyCleanUp/releases)
+[![Stars](https://img.shields.io/github/stars/mc-wusel/DailyCleanUp)](https://github.com/mc-wusel/DailyCleanUp/stargazers)
+[![Issues](https://img.shields.io/github/issues/mc-wusel/DailyCleanUp)](https://github.com/mc-wusel/DailyCleanUp/issues)
+![Last commit](https://img.shields.io/github/last-commit/mc-wusel/DailyCleanUp)
+![Repo size](https://img.shields.io/github/repo-size/mc-wusel/DailyCleanUp)
+![Top language](https://img.shields.io/github/languages/top/mc-wusel/DailyCleanUp)
 
-DailyCleanUp is a configurable PowerShell maintenance script that
-automates Windows system cleanup, diagnostics, optional backups, and
-restart operations.\
-All behavior is controlled via a `config.json` file, allowing flexible
-activation or deactivation of individual maintenance tasks.
+# 🧹 DailyCleanUp
 
-The script is designed for regular system maintenance and can be
-executed manually or via Windows Task Scheduler.
+**DailyCleanUp** is a configurable **PowerShell system maintenance script** that automates Windows cleanup, diagnostics, optional backups, and restart operations.
 
-# Main Features
+All behavior is controlled via a **`config.json` configuration file**, allowing you to enable or disable each maintenance task individually.
 
-## System Diagnostics
+The script can be executed **manually or automatically via Windows Task Scheduler**.
 
--   **S.M.A.R.T Disk Health Check**\
-    Checks the health status of physical disks and displays system disk
-    space information.
+---
 
--   **System Health Repair (optional)**\
-    Runs Windows system health repair operations.
+# 🚀 Download
 
--   **Windows Update Check (optional)**\
-    Executes update checks and installation procedures.
+Download the latest version from the releases page:
 
-## System Maintenance
+➡ **[Download Latest Release](https://github.com/mc-wusel/DailyCleanUp/releases/latest)**
 
--   **Create System Restore Point (optional)**\
-    Generates a Windows restore point before performing cleanup
-    operations.
+---
 
--   **Clear DNS Cache (optional)**\
-    Flushes the Windows DNS cache.
+# 📖 Overview
 
--   **Folder Size Analysis**\
-    Calculates and displays the size (in MB) of system and custom
-    folders.
+DailyCleanUp provides a **structured and automated way to maintain Windows systems**.
 
--   **System Folder Cleanup (optional)**\
-    Deletes contents of predefined Windows system folders and
-    user-defined directories.
+It combines:
 
-Default system folders include:
+* System diagnostics
+* Cleanup operations
+* Optional backups
+* Automatic restart functionality
 
--   `%TEMP%`
--   `C:\Windows\Temp`
--   `C:\Windows\Prefetch`
--   `C:\Windows\Logs\CBS`
--   `C:\Windows\SoftwareDistribution\Download`
+All functionality is **modular and configurable** through a single configuration file.
 
-Additional folders can be defined in the configuration file.
+---
 
--   **Recycle Bin Cleanup (optional)**\
-    Empties the Windows Recycle Bin.
+# ⚙️ Features
 
-## Thunderbird Profile Backup (optional)
+## 🔍 System Diagnostics
 
-If enabled in the configuration:
+### S.M.A.R.T Disk Health Check
 
--   Detects whether Thunderbird is installed
--   Closes Thunderbird if currently running
--   Detects available profiles
--   Compresses profiles
--   Stores backups in a defined destination folder
+Checks the health status of physical disks and displays system disk usage information.
 
-This ensures email data, contacts, and settings are preserved before
-performing cleanup operations.
+### System Health Repair *(optional)*
 
-## Automatic Restart
+Runs Windows system repair commands to verify and restore system integrity.
 
-If enabled, the script automatically restarts the system after execution
-(with a countdown timer).
+### Windows Update Check *(optional)*
 
-# Configuration
+Checks for available Windows updates and installs them if configured.
 
-All features are controlled via `config.json`.
+---
 
-## Configuration Overview
+## 🧹 System Maintenance
 
-  ----------------------------------------------------------------------------------
-  Setting                                   Description
-  ----------------------------------------- ----------------------------------------
-  `Disk.Check`                              Enables S.M.A.R.T disk check and disk
-                                            space display
+### Create System Restore Point *(optional)*
 
-  `RestorePoint.Create`                     Creates a system restore point
+Creates a restore point before executing cleanup tasks.
 
-  `DNSCache.Clear`                          Clears the Windows DNS cache
+### Clear DNS Cache *(optional)*
 
-  `SystemHealthRepair.Check`                Runs system health repair
+Flushes the Windows DNS cache.
 
-  `Updates.Check`                           Executes Windows update check
+### Folder Size Analysis
 
-  `Folder.Check`                            Calculates folder sizes
+Calculates and displays the size of important system folders.
 
-  `Folder.Delete`                           Deletes folder contents
+### System Folder Cleanup *(optional)*
 
-  `Folder.AdditionalFolders`                Adds custom folders for cleanup
+Deletes contents of predefined Windows system folders and optional custom directories.
 
-  `RecycleBin.Delete`                       Empties the recycle bin
+Default folders:
 
-  `Restart`                                 Restarts the system after completion
+* `%TEMP%`
+* `C:\Windows\Temp`
+* `C:\Windows\Prefetch`
+* `C:\Windows\Logs\CBS`
+* `C:\Windows\SoftwareDistribution\Download`
 
-  `BackUp.eMail.Thunderbird.Activated`      Enables Thunderbird backup
+Additional folders can be configured in `config.json`.
 
-  `BackUp.eMail.Thunderbird.BackupFolder`   Destination folder for backups
-  ----------------------------------------------------------------------------------
+### Recycle Bin Cleanup *(optional)*
+
+Empties the Windows Recycle Bin.
+
+---
+
+## 📧 Thunderbird Profile Backup *(optional)*
+
+If enabled:
+
+* Detects installed Thunderbird profiles
+* Closes Thunderbird if running
+* Compresses profile data
+* Saves backups to a defined folder
+
+This protects **emails, contacts, and configuration data** before cleanup operations.
+
+---
+
+## 🔄 Automatic Restart
+
+If enabled, the script **automatically restarts the system after execution** with a countdown timer.
+
+---
+
+# ⚙️ Configuration
+
+All features are controlled through the `config.json` file.
+
+## Configuration Options
+
+| Setting                               | Description                                         |
+| ------------------------------------- | --------------------------------------------------- |
+| Disk.Check                            | Enables S.M.A.R.T disk check and disk space display |
+| RestorePoint.Create                   | Creates a Windows restore point                     |
+| DNSCache.Clear                        | Clears the DNS cache                                |
+| SystemHealthRepair.Check              | Runs system repair commands                         |
+| Updates.Check                         | Executes Windows update checks                      |
+| Folder.Check                          | Calculates folder sizes                             |
+| Folder.Delete                         | Deletes folder contents                             |
+| Folder.AdditionalFolders              | Additional folders for cleanup                      |
+| RecycleBin.Delete                     | Empties the recycle bin                             |
+| Restart                               | Automatically restarts the system                   |
+| BackUp.eMail.Thunderbird.Activated    | Enables Thunderbird backup                          |
+| BackUp.eMail.Thunderbird.BackupFolder | Backup destination folder                           |
+
+---
 
 ## Example Configuration
 
-``` json
+```json
 {
   "Disk": { "Check": true },
   "RestorePoint": { "Create": false },
@@ -133,59 +159,115 @@ All features are controlled via `config.json`.
 }
 ```
 
-# Administrator Behavior
+---
 
-Some operations require administrator privileges:
+# 💾 Installation
 
--   Creating restore points\
--   Cleaning system folders\
--   Running updates\
--   Emptying the Recycle Bin\
--   Restarting the system
+Clone the repository:
 
-If required, the script automatically relaunches itself with elevated
-permissions.
-
-# Usage
-
-## Installation
-
-1.  Clone the repository or download the files.
-2.  Adjust `config.json` according to your needs.
-3.  Ensure PowerShell execution policy allows local scripts:
-
-``` powershell
-Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+```bash
+git clone https://github.com/mc-wusel/DailyCleanUp.git
 ```
 
-## Execution
+Or download the latest release from the releases page.
 
-``` powershell
+Adjust the configuration file:
+
+```
+config.json
+```
+
+---
+
+# ▶️ Usage
+
+Run the script from PowerShell:
+
+```powershell
 .\DailyCleanUp.ps1
 ```
 
-The script can also be configured as a scheduled task for automated
-maintenance.
+---
 
-# Requirements
+# 🔐 Administrator Behavior
 
--   Windows OS\
--   PowerShell 5.x or newer\
--   Administrator privileges (for system-level tasks)\
--   Thunderbird (only required if backup feature is enabled)
+Some operations require **administrator privileges**, including:
 
-# Benefits
+* Creating restore points
+* Cleaning system folders
+* Running Windows updates
+* Emptying the recycle bin
+* Restarting the system
 
--   **Modular** -- Enable only the features you need\
--   **Automated Maintenance** -- Suitable for scheduled execution\
--   **Safe Backup Option** -- Protect Thunderbird profiles before
-    cleanup\
--   **Graceful Error Handling** -- Handles missing folders and
-    permission issues safely
+If required, the script **automatically relaunches itself with elevated permissions**.
 
-# Conclusion
+---
 
-**DailyCleanUp** provides a structured and configurable approach to
-Windows system maintenance.\
-It combines diagnostics, cleanup, optional backups, and restart
-automation in a single script.
+# 🖥 Requirements
+
+* Windows OS
+* PowerShell **5.x or newer**
+* Administrator privileges (for system-level tasks)
+* Thunderbird *(only if backup feature is enabled)*
+
+---
+
+# 🤖 Automation (Task Scheduler)
+
+DailyCleanUp can run automatically using **Windows Task Scheduler**.
+
+Typical setup:
+
+1. Open **Task Scheduler**
+2. Create a **Basic Task**
+3. Set trigger (daily / weekly)
+4. Execute:
+
+```
+powershell.exe
+```
+
+Arguments:
+
+```
+-ExecutionPolicy Bypass -File "C:\Path\To\DailyCleanUp.ps1"
+```
+
+---
+
+# 🌟 Benefits
+
+**Modular Design**
+Enable only the features you need.
+
+**Automated Maintenance**
+Perfect for scheduled maintenance tasks.
+
+**Safe Backup Option**
+Protect Thunderbird profiles.
+
+---
+
+# 🤝 Contributing
+
+Contributions, suggestions, and bug reports are welcome.
+
+1. Fork the repository
+2. Create a feature branch
+3. Submit a pull request
+
+---
+
+# 📄 License
+
+This project is licensed under the repository's license.
+
+---
+
+# ⭐ Support the Project
+
+If you find this project useful:
+
+* ⭐ Star the repository
+* 🐛 Report issues
+* 💡 Suggest improvements
