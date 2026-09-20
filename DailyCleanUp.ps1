@@ -48,7 +48,7 @@ function Add-TaskLog {
 
   $Status = if ($Success) { "OK" } else { "ERROR" }
   $Date = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-  Add-Content -Path $Script:TaskLogFile -Value "$Date | $Task | $Status"
+  Add-Content -Path $Script:TaskLogFile -Value "$Date | $Task | $Status" -Encoding UTF8
 }
 
 # Check if the script is running with administrator privileges
