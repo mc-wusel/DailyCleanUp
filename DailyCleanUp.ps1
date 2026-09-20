@@ -28,15 +28,28 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 $ConfigFile = "$PSScriptroot\config.json"
 $Config = Get-Content -Path $ConfigFile -Raw | ConvertFrom-Json
 
-. "$PSScriptRoot\scr\core.ps1"
-. "$PSScriptRoot\scr\thunderbird.ps1"
-. "$PSScriptRoot\scr\recyclebin.ps1"
+. "$PSScriptRoot\src\core.ps1"
+. "$PSScriptRoot\src\thunderbird.ps1"
+. "$PSScriptRoot\src\recyclebin.ps1"
 
 $LblOK = "OK"
 $LblYes = "Yes"
 $LblNo = "No"
 $LblNoPermission = "no permission"
 $LblNotAvailable = "not available"
+
+function Add-TaskLog {
+  param(
+    [Parameter(Mandatory = $true)]
+    [string]$Task,
+    [Parameter(Mandatory = $true)]
+    [bool]$Success
+  )
+
+  $Status = if ($Success) { "OK" } else { "ERROR" }
+  $Date = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+  Add-Content -Path $Script:TaskLogFile -Value "$Date | $Task | $Status" -Encoding UTF8
+}
 
 # Check if the script is running with administrator privileges
 function IsAdministrator {
@@ -52,17 +65,29 @@ if (-not(IsAdministrator) -and $Config.RecycleBin.Delete -eq $true) {
   exit
 }
 
+$Script:TaskLogFile = Join-Path -Path $PSScriptRoot -ChildPath ("DailyCleanUp-Report-{0}.md" -f (Get-Date -Format "yyyyMMdd-HHmmss"))
+"Datum | Task | Status" | Set-Content -Path $Script:TaskLogFile -Encoding UTF8
+"--- | --- | ---" | Add-Content -Path $Script:TaskLogFile -Encoding UTF8
+
 #region Check SMART State of physical disks
 Write-Host "Checking S.M.A.R.T state of physical disks... " -ForegroundColor Magenta
 if ($Config.Disk.Check -eq $true) {
-  Check_SMART_State
-  SystemDiskSpace
+  try {
+    Check_SMART_State
+    SystemDiskSpace
+    Add-TaskLog -Task "Disk diagnostics" -Success $true
+  }
+  catch {
+    Add-TaskLog -Task "Disk diagnostics" -Success $false
+  }
 }
 
 #region Set Restore Point
 Write-Host "Creating System Restore Point... " -NoNewline -ForegroundColor Magenta
 if ($Config.RestorePoint.Create -eq $true) {
-  if (CreateSystemRestorePoint) {
+  $RestorePointState = CreateSystemRestorePoint
+  Add-TaskLog -Task "Create system restore point" -Success $RestorePointState
+  if ($RestorePointState) {
     Write-Host "Done" -ForegroundColor Green
   }
   else {
@@ -75,7 +100,9 @@ else {
 
 write-Host "Clear DNS Cache... " -NoNewline -ForegroundColor Magenta
 if ($Config.DNSCache.Clear -eq $true) {
-  if (ClearDNSCache) {
+  $DnsState = ClearDNSCache
+  Add-TaskLog -Task "Clear DNS cache" -Success $DnsState
+  if ($DnsState) {
     Write-Host "Done" -ForegroundColor Green
   }
   else {
@@ -88,7 +115,8 @@ else {
 
 if ($Config.SystemHealthRepair.Check -eq $true) {
   write-Host "System health check: "  -ForegroundColor Magenta
-  RunSystemHealthRepair
+  $HealthState = RunSystemHealthRepair
+  Add-TaskLog -Task "System health repair" -Success $HealthState
 }
 else {
   Write-Host "System health check: " -NoNewline -ForegroundColor Magenta
@@ -98,7 +126,14 @@ else {
 
 write-Host "Get updates... " -NoNewline -ForegroundColor Magenta
 if ($Config.Updates.Check -eq $true) {
-  RunUpdates
+  $UpdateState = RunUpdates
+  Add-TaskLog -Task "Run updates" -Success $UpdateState
+  if ($UpdateState) {
+    Write-Host "Done" -ForegroundColor Green
+  }
+  else {
+    Write-Host "Failed" -ForegroundColor Red
+  }
 }
 else {
   Write-Host $LblNo -ForegroundColor Red
@@ -132,14 +167,17 @@ if ($Config.Folder.Check -eq $true) {
 
       if ($FolderSize -ne $false) {
         Write-Host "$(GetFolderDataSize -Folder $Folder) MB" -ForegroundColor Yellow
+        Add-TaskLog -Task "Check folder $Folder" -Success $true
       }
       else {
         Write-Host $LblNoPermission -ForegroundColor Red
+        Add-TaskLog -Task "Check folder $Folder" -Success $false
       }
     }
     else {
       Write-Host "`tStatus... " -NoNewline -ForegroundColor Magenta
       Write-Host $LblNotAvailable -ForegroundColor Red
+      Add-TaskLog -Task "Check folder $Folder" -Success $false
     }
   }
 }
@@ -157,7 +195,9 @@ if ($config.Folder.Delete -eq $true) {
     Write-Host "`t`tStatus... " -NoNewline -ForegroundColor Magenta
 
     $State = CleanupFolder -Folder $Folder
-    if ($State -ne $false) {
+    $CleanupState = $State -ne $false
+    Add-TaskLog -Task "Cleanup folder $Folder" -Success $CleanupState
+    if ($CleanupState) {
       Write-Host $LblOK -ForegroundColor Green
     }
     else {
@@ -175,7 +215,9 @@ if ($config.RecycleBin.Delete -eq $true) {
   Write-Host $LblYes -ForegroundColor Green
 
   Write-Host "`tStatus... " -NoNewline -ForegroundColor Magenta
-  if (Clear-RecycleBin) {
+  $RecycleBinState = Clear-RecycleBin
+  Add-TaskLog -Task "Empty recycle bin" -Success $RecycleBinState
+  if ($RecycleBinState) {
     Write-Host "Done" -ForegroundColor Green
   }
   else {
@@ -190,6 +232,8 @@ Write-Host "Thunderbird Backup desired... " -NoNewline -ForegroundColor Magenta
 
 if ($config.BackUp.eMail.Thunderbird.Activated -eq $true) {
   Write-Host $LblYes -ForegroundColor Green
+
+  $ThunderbirdTaskState = $true
 
   Write-Host "`tInstalled: " -NoNewline -ForegroundColor Magenta
   if (IsThunderbirdInstalled) {
@@ -213,6 +257,7 @@ if ($config.BackUp.eMail.Thunderbird.Activated -eq $true) {
           Write-Host "done" -ForegroundColor Green
           break
         }
+        $ThunderbirdTaskState = $false
       }
       else {
         Write-Host $LblNo -ForegroundColor Green
@@ -223,6 +268,7 @@ if ($config.BackUp.eMail.Thunderbird.Activated -eq $true) {
   }
   else {
     Write-Host $LblNo -ForegroundColor Red
+    $ThunderbirdTaskState = $false
   }
 
   Write-Host "`tFound profiles: " -NoNewline -ForegroundColor Magenta
@@ -239,25 +285,32 @@ if ($config.BackUp.eMail.Thunderbird.Activated -eq $true) {
       }
       else {
         Write-Host $_ -ForegroundColor Red
+        $ThunderbirdTaskState = $false
       }
     }
   }
+  else {
+    $ThunderbirdTaskState = $false
+  }
+
+  Add-TaskLog -Task "Thunderbird backup" -Success $ThunderbirdTaskState
 }
 else {
   Write-Host $LblNo -ForegroundColor Red
 }
 
 if ($Config.Restart) {
-  $delay = 5  
+  Add-TaskLog -Task "Restart computer" -Success $true
+  $delay = 5
   Write-Host "Restarting system in $delay seconds..." -ForegroundColor Magenta
-    
+
   for ($i = $delay; $i -gt 0; $i--) {
     Write-Host "$i..." -NoNewline -ForegroundColor Yellow
     Start-Sleep -Seconds 1
-    Write-Host "`r" 
+    Write-Host "`r"
   }
 
-  Write-Host "" 
+  Write-Host ""
   Restart-Computer -Force
 }
 
