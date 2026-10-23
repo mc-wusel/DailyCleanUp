@@ -21,7 +21,15 @@ jobs:
         id: read_version
         run: |
           CURRENT=$(cat VERSION)
+          # main is protected, so VERSION is not committed back; use the latest release if it is newer
+          LATEST=$(gh release view --json tagName -q .tagName 2>/dev/null || true)
+          LATEST="${LATEST#v}"
+          if [[ -n "$LATEST" ]]; then
+            CURRENT=$(printf '%s\n%s\n' "$CURRENT" "$LATEST" | sort -V | tail -n1)
+          fi
           echo "CURRENT=$CURRENT" >> $GITHUB_ENV
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Determine bump type
         id: determine_bump
@@ -42,14 +50,6 @@ jobs:
           NEW_VERSION="$MAJOR.$MINOR.$PATCH"
           echo $NEW_VERSION > VERSION
           echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
-
-      - name: Commit new VERSION
-        run: |
-          git config user.name "mc-wusel"
-          git config user.email "your.email@example.com"
-          git add VERSION
-          git commit -m "Bump version to $NEW_VERSION [skip ci]" || echo "No changes to commit"
-          git push origin HEAD:main || echo "Push skipped (force if needed)"
 
       - name: Create ZIP
         run: |
