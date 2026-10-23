@@ -17,7 +17,7 @@
   "Folder": {
     "Check": true,
     "Delete": false,
-    "AdditionFolders": []
+    "AdditionalFolders": []
   },
   "RecycleBin": {
     "Delete": false
